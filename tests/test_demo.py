@@ -1,7 +1,7 @@
 """Tests for pure formatting helpers in the demo module."""
 
 from hybrid_rag.demo import format_entities, short_kind
-from hybrid_rag.hybrid import Entity
+from hybrid_rag.entities import Entity
 
 
 def test_short_kind_maps_labels():

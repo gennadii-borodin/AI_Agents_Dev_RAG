@@ -12,7 +12,9 @@ from rich.table import Table
 
 from hybrid_rag import graph
 from hybrid_rag.documents import DOCUMENTS, QUERIES
-from hybrid_rag.hybrid import Entity, HybridResult, hybrid_search, naive_search
+from hybrid_rag.entities import Entity
+from hybrid_rag.graph import RequirementGraph
+from hybrid_rag.hybrid import HybridResult, hybrid_search, naive_search
 from hybrid_rag.vector import SearchResult, VectorStore
 
 load_dotenv()
@@ -97,12 +99,14 @@ def main() -> None:
         store.add_all(DOCUMENTS)
         console.print(f"[green]vector store ready: {store.count()} documents[/green]")
 
+        traversal = RequirementGraph(conn.session)
+
         for item in QUERIES:
             question = item["question"]
             console.rule(f"[bold]Q: {question}")
 
             naive = naive_search(store, question)
-            hybrid = hybrid_search(store, conn.session, question)
+            hybrid = hybrid_search(store, traversal, question)
 
             render_comparison(question, naive, hybrid)
 
