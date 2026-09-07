@@ -1,0 +1,10 @@
+.venv/
+.env
+hybrid_rag/chroma_db/
+.scratch/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.idea/

@@ -1,0 +1,40 @@
+[project]
+name = "ai-agents-rag2"
+version = "0.1.0"
+description = "Hybrid RAG demos: vector search + graph traversal for agent memory"
+requires-python = ">=3.11"
+dependencies = [
+    "openai>=1.0",
+    "chromadb>=0.4",
+    "neo4j>=5.0",
+    "python-dotenv>=1.0",
+    "rich>=13.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+    "mypy>=1.10",
+]
+
+notebook = [
+    "ipykernel>=6.0",
+    "ipywidgets>=8.0",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+extend-exclude = [".scratch"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM", "C4"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
