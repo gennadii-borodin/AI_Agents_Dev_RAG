@@ -13,10 +13,14 @@ from hybrid_rag.vector import VectorStore
 
 @dataclass
 class HybridResult:
+    """Entities retrieved for a query, ranked for presentation."""
+
     entities: list[Entity]
 
 
 class Retriever(Protocol):
+    """Answers a query with domain entities via vector and optional graph."""
+
     def retrieve(self, query: str, k: int = 5) -> HybridResult: ...
 
 
