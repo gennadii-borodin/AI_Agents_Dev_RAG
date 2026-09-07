@@ -1,18 +1,23 @@
-"""Hybrid retrieval combining vector similarity with graph traversal."""
+"""Retrieval strategies behind a single seam."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Protocol
 
 from hybrid_rag.entities import Entity
 from hybrid_rag.graph import GraphTraversal
 from hybrid_rag.kind import Kind
-from hybrid_rag.vector import SearchResult, VectorStore
+from hybrid_rag.vector import VectorStore
 
 
 @dataclass
 class HybridResult:
     entities: list[Entity]
+
+
+class Retriever(Protocol):
+    def retrieve(self, query: str, k: int = 5) -> HybridResult: ...
 
 
 _REQ_KINDS = frozenset({Kind.FUNCTIONAL_REQUIREMENT, Kind.NON_FUNCTIONAL_REQUIREMENT})
@@ -51,27 +56,43 @@ def _expand_from_tests(
             req_ids.add(covered.parent.id)
 
 
-def naive_search(
-    vector_store: VectorStore, query: str, k: int = 5
-) -> list[SearchResult]:
-    return vector_store.search(query, k=k)
+@dataclass
+class NaiveRetriever:
+    """Vector ranking, hydrated into domain entities without neighbour expansion."""
+
+    vector_store: VectorStore
+    graph: GraphTraversal
+
+    def retrieve(self, query: str, k: int = 5) -> HybridResult:
+        results = self.vector_store.search(query, k=k)
+        if not results:
+            return HybridResult(entities=[])
+        rank = {result.id: i for i, result in enumerate(results)}
+        entities = self.graph.get_nodes([r.id for r in results])
+        entities.sort(key=lambda entity: rank[entity.id])
+        return HybridResult(entities=entities)
 
 
-def hybrid_search(
-    vector_store: VectorStore, graph: GraphTraversal, query: str, k: int = 5
-) -> HybridResult:
-    results = vector_store.search(query, k=k)
+@dataclass
+class HybridRetriever:
+    """Vector ranking plus graph expansion over IMPLEMENTS and COVERS."""
 
-    req_ids: set[str] = set()
-    test_ids: set[str] = set()
+    vector_store: VectorStore
+    graph: GraphTraversal
 
-    for r in results:
-        if r.doc_type is Kind.TEST_SCENARIO:
-            test_ids.add(r.id)
-        else:
-            req_ids.add(r.id)
+    def retrieve(self, query: str, k: int = 5) -> HybridResult:
+        results = self.vector_store.search(query, k=k)
 
-    _expand_from_requirements(graph, req_ids, test_ids)
-    _expand_from_tests(graph, test_ids, req_ids)
+        req_ids: set[str] = set()
+        test_ids: set[str] = set()
 
-    return HybridResult(entities=graph.get_nodes(list(req_ids | test_ids)))
+        for result in results:
+            if result.doc_type is Kind.TEST_SCENARIO:
+                test_ids.add(result.id)
+            else:
+                req_ids.add(result.id)
+
+        _expand_from_requirements(self.graph, req_ids, test_ids)
+        _expand_from_tests(self.graph, test_ids, req_ids)
+
+        return HybridResult(entities=self.graph.get_nodes(list(req_ids | test_ids)))
