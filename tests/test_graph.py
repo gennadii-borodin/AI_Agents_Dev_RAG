@@ -6,6 +6,7 @@ from hybrid_rag import graph
 from hybrid_rag.documents import DOCUMENTS
 from hybrid_rag.entities import Entity
 from hybrid_rag.graph import RequirementGraph
+from hybrid_rag.kind import Kind
 
 
 def test_build_graph_creates_one_node_per_document():
@@ -52,8 +53,8 @@ def test_get_nodes_returns_entities():
     nodes = RequirementGraph(session).get_nodes(["TS-031", "FR-013"])
 
     assert nodes == [
-        Entity(id="TS-031", title="t", text="x", kind="TestScenario"),
-        Entity(id="FR-013", title="f", text="y", kind="FunctionalRequirement"),
+        Entity(id="TS-031", title="t", text="x", kind=Kind.TEST_SCENARIO),
+        Entity(id="FR-013", title="f", text="y", kind=Kind.FUNCTIONAL_REQUIREMENT),
     ]
 
 
@@ -75,8 +76,8 @@ def test_get_related_tests_returns_entities():
     tests = RequirementGraph(session).get_related_tests(["FR-001"])
 
     assert tests == [
-        Entity(id="TS-001", title="t", text="x", kind="TestScenario"),
-        Entity(id="TS-002", title="t", text="x", kind="TestScenario"),
+        Entity(id="TS-001", title="t", text="x", kind=Kind.TEST_SCENARIO),
+        Entity(id="TS-002", title="t", text="x", kind=Kind.TEST_SCENARIO),
     ]
 
 
@@ -97,7 +98,7 @@ def test_get_children_of_br_returns_entities():
     children = RequirementGraph(session).get_children_of_br(["BR-001"])
 
     assert children == [
-        Entity(id="FR-001", title="f", text="y", kind="FunctionalRequirement")
+        Entity(id="FR-001", title="f", text="y", kind=Kind.FUNCTIONAL_REQUIREMENT)
     ]
 
 
@@ -113,7 +114,7 @@ def test_get_parent_business_requirements_returns_entities():
     parents = RequirementGraph(session).get_parent_business_requirements(["FR-001"])
 
     assert parents == [
-        Entity(id="BR-001", title="b", text="z", kind="BusinessRequirement")
+        Entity(id="BR-001", title="b", text="z", kind=Kind.BUSINESS_REQUIREMENT)
     ]
 
 
@@ -147,12 +148,12 @@ def test_get_related_requirements_returns_covered_pairs():
 
     assert len(covered) == 2
     assert covered[0].requirement == Entity(
-        id="FR-001", title="f", text="y", kind="FunctionalRequirement"
+        id="FR-001", title="f", text="y", kind=Kind.FUNCTIONAL_REQUIREMENT
     )
     assert covered[0].parent == Entity(
-        id="BR-001", title="b", text="z", kind="BusinessRequirement"
+        id="BR-001", title="b", text="z", kind=Kind.BUSINESS_REQUIREMENT
     )
     assert covered[1].requirement == Entity(
-        id="NFR-001", title="n", text="w", kind="NonFunctionalRequirement"
+        id="NFR-001", title="n", text="w", kind=Kind.NON_FUNCTIONAL_REQUIREMENT
     )
     assert covered[1].parent is None

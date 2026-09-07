@@ -4,13 +4,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from hybrid_rag.kind import Kind
+
 
 @dataclass(frozen=True)
 class Entity:
     id: str
     title: str
     text: str
-    kind: str
+    kind: Kind
 
 
 @dataclass(frozen=True)

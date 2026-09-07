@@ -10,6 +10,7 @@ from neo4j import Driver, GraphDatabase, Session
 
 from hybrid_rag.documents import Document
 from hybrid_rag.entities import CoveredRequirement, Entity
+from hybrid_rag.kind import Kind
 
 
 class Queryable(Protocol):
@@ -47,17 +48,9 @@ def erase_graph(tx: Queryable) -> None:
     tx.run("MATCH (n) DETACH DELETE n")
 
 
-_TYPE_TO_LABEL = {
-    "business": "BusinessRequirement",
-    "functional": "FunctionalRequirement",
-    "nonfunctional": "NonFunctionalRequirement",
-    "test": "TestScenario",
-}
-
-
 def build_graph(tx: Queryable, documents: list[Document]) -> None:
     for doc in documents:
-        label = _TYPE_TO_LABEL[doc["type"]]
+        label = Kind.from_doc_type(doc["type"]).label
         tx.run(
             f"CREATE (n:{label} {{id: $id, title: $title, text: $text}})",
             id=doc["id"],
@@ -123,7 +116,12 @@ class RequirementGraph(GraphTraversal):
             ids=ids,
         )
         return [
-            Entity(id=r["id"], title=r["title"], text=r["text"], kind=r["label"])
+            Entity(
+                id=r["id"],
+                title=r["title"],
+                text=r["text"],
+                kind=Kind.from_label(r["label"]),
+            )
             for r in rows
         ]
 
@@ -140,7 +138,12 @@ class RequirementGraph(GraphTraversal):
             ids=requirement_ids,
         )
         return [
-            Entity(id=r["id"], title=r["title"], text=r["text"], kind="TestScenario")
+            Entity(
+                id=r["id"],
+                title=r["title"],
+                text=r["text"],
+                kind=Kind.TEST_SCENARIO,
+            )
             for r in rows
         ]
 
@@ -158,7 +161,12 @@ class RequirementGraph(GraphTraversal):
             ids=br_ids,
         )
         return [
-            Entity(id=r["id"], title=r["title"], text=r["text"], kind=r["label"])
+            Entity(
+                id=r["id"],
+                title=r["title"],
+                text=r["text"],
+                kind=Kind.from_label(r["label"]),
+            )
             for r in rows
         ]
 
@@ -181,7 +189,7 @@ class RequirementGraph(GraphTraversal):
                 id=r["id"],
                 title=r["title"],
                 text=r["text"],
-                kind="BusinessRequirement",
+                kind=Kind.BUSINESS_REQUIREMENT,
             )
             for r in rows
         ]
@@ -205,14 +213,17 @@ class RequirementGraph(GraphTraversal):
         return [
             CoveredRequirement(
                 requirement=Entity(
-                    id=r["id"], title=r["title"], text=r["text"], kind=r["label"]
+                    id=r["id"],
+                    title=r["title"],
+                    text=r["text"],
+                    kind=Kind.from_label(r["label"]),
                 ),
                 parent=(
                     Entity(
                         id=r["parent_id"],
                         title=r["parent_title"],
                         text=r["parent_text"],
-                        kind="BusinessRequirement",
+                        kind=Kind.BUSINESS_REQUIREMENT,
                     )
                     if r["parent_id"]
                     else None

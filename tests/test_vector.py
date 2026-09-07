@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from hybrid_rag.documents import Document
+from hybrid_rag.kind import Kind
 from hybrid_rag.vector import VectorStore
 
 
@@ -41,7 +42,7 @@ def store():
 
 def test_add_stores_document(store):
     vs, collection = store
-    vs.add("BR-001", "text", "business")
+    vs.add("BR-001", "text", Kind.BUSINESS_REQUIREMENT)
 
     collection.add.assert_called_once()
     args = collection.add.call_args[1]
@@ -88,7 +89,7 @@ def test_search_returns_ranked_results(store):
     assert results[0].score == 0.9
     assert results[1].id == "BR-002"
     assert results[1].score == 0.7
-    assert results[0].doc_type == "business"
+    assert results[0].doc_type is Kind.BUSINESS_REQUIREMENT
 
 
 def test_search_empty_store_returns_empty(store):

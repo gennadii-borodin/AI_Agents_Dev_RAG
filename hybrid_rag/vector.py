@@ -12,6 +12,7 @@ from chromadb.api.types import Metadata
 from openai import OpenAI
 
 from hybrid_rag.documents import Document
+from hybrid_rag.kind import Kind
 
 EMBEDDING_MODEL = "text-embedding-3-small"
 CHROMA_PATH = "./hybrid_rag/chroma_db"
@@ -22,18 +23,18 @@ COLLECTION_NAME = "requirements"
 class SearchResult:
     id: str
     text: str
-    doc_type: str
+    doc_type: Kind
     score: float
 
 
-def _metadata(doc_type: str) -> Metadata:
-    return {"type": doc_type}
+def _metadata(kind: Kind) -> Metadata:
+    return {"type": kind.doc_type}
 
 
-def _read_type(metadata: Metadata) -> str:
+def _read_kind(metadata: Metadata) -> Kind:
     value = metadata["type"]
     if isinstance(value, str):
-        return value
+        return Kind.from_doc_type(value)
     raise ValueError(f"missing string 'type' metadata, got {value!r}")
 
 
@@ -51,12 +52,12 @@ class VectorStore:
         response = self._openai.embeddings.create(model=EMBEDDING_MODEL, input=text)
         return np.asarray(response.data[0].embedding, dtype=np.float32)
 
-    def add(self, doc_id: str, text: str, doc_type: str) -> None:
+    def add(self, doc_id: str, text: str, kind: Kind) -> None:
         self._collection.add(
             ids=[doc_id],
             documents=[text],
             embeddings=[self._embed(text)],
-            metadatas=[_metadata(doc_type)],
+            metadatas=[_metadata(kind)],
         )
 
     def add_all(self, documents: list[Document]) -> None:
@@ -64,7 +65,7 @@ class VectorStore:
             return
         ids = [doc["id"] for doc in documents]
         texts = [doc["text"] for doc in documents]
-        metadatas = [_metadata(doc["type"]) for doc in documents]
+        metadatas = [_metadata(Kind.from_doc_type(doc["type"])) for doc in documents]
 
         response = self._openai.embeddings.create(model=EMBEDDING_MODEL, input=texts)
         embeddings = np.asarray(
@@ -94,7 +95,7 @@ class VectorStore:
             SearchResult(
                 id=doc_id,
                 text=doc,
-                doc_type=_read_type(cast(Metadata, meta)),
+                doc_type=_read_kind(cast(Metadata, meta)),
                 score=1.0 - dist,
             )
             for doc_id, doc, dist, meta in zip(

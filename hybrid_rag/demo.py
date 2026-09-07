@@ -14,24 +14,18 @@ from hybrid_rag import graph
 from hybrid_rag.documents import DOCUMENTS, QUERIES
 from hybrid_rag.entities import Entity
 from hybrid_rag.graph import RequirementGraph
-from hybrid_rag.hybrid import HybridResult, hybrid_search, naive_search
-from hybrid_rag.vector import SearchResult, VectorStore
+from hybrid_rag.kind import Kind
+from hybrid_rag.retrieval import HybridResult, HybridRetriever, NaiveRetriever
+from hybrid_rag.vector import VectorStore
 
 load_dotenv()
 
 console = Console()
 CHAT_MODEL = "gpt-4.1-mini"
 
-LABELS: dict[str, str] = {
-    "BusinessRequirement": "BR",
-    "FunctionalRequirement": "FR",
-    "NonFunctionalRequirement": "NFR",
-    "TestScenario": "TS",
-}
 
-
-def short_kind(label: str) -> str:
-    return LABELS.get(label, label)
+def short_kind(kind: Kind) -> str:
+    return kind.short
 
 
 def format_entities(entities: list[Entity]) -> str:
@@ -57,14 +51,12 @@ def ask_llm(client: OpenAI, question: str, context: str) -> str:
     return response.choices[0].message.content or ""
 
 
-def render_comparison(
-    question: str, naive: list[SearchResult], hybrid: HybridResult
-) -> None:
+def render_comparison(question: str, naive: HybridResult, hybrid: HybridResult) -> None:
     table = Table(title=f"Query: {question}")
     table.add_column("Naive (vector only)")
     table.add_column("Hybrid (vector + graph)")
 
-    naive_rows = [f"[{r.doc_type}] {r.id}: {r.text[:60]}" for r in naive]
+    naive_rows = [f"[{short_kind(e.kind)}] {e.id}: {e.title}" for e in naive.entities]
     hybrid_rows = [f"[{short_kind(e.kind)}] {e.id}: {e.title}" for e in hybrid.entities]
 
     height = max(len(naive_rows), len(hybrid_rows))
@@ -100,13 +92,15 @@ def main() -> None:
         console.print(f"[green]vector store ready: {store.count()} documents[/green]")
 
         traversal = RequirementGraph(conn.session)
+        naive_retriever = NaiveRetriever(store, traversal)
+        hybrid_retriever = HybridRetriever(store, traversal)
 
         for item in QUERIES:
             question = item["question"]
             console.rule(f"[bold]Q: {question}")
 
-            naive = naive_search(store, question)
-            hybrid = hybrid_search(store, traversal, question)
+            naive = naive_retriever.retrieve(question)
+            hybrid = hybrid_retriever.retrieve(question)
 
             render_comparison(question, naive, hybrid)
 
