@@ -15,6 +15,7 @@ from hybrid_rag.documents import DOCUMENTS, QUERIES
 from hybrid_rag.entities import Entity
 from hybrid_rag.graph import RequirementGraph
 from hybrid_rag.hybrid import HybridResult, hybrid_search, naive_search
+from hybrid_rag.kind import Kind
 from hybrid_rag.vector import SearchResult, VectorStore
 
 load_dotenv()
@@ -22,16 +23,9 @@ load_dotenv()
 console = Console()
 CHAT_MODEL = "gpt-4.1-mini"
 
-LABELS: dict[str, str] = {
-    "BusinessRequirement": "BR",
-    "FunctionalRequirement": "FR",
-    "NonFunctionalRequirement": "NFR",
-    "TestScenario": "TS",
-}
 
-
-def short_kind(label: str) -> str:
-    return LABELS.get(label, label)
+def short_kind(kind: Kind) -> str:
+    return kind.short
 
 
 def format_entities(entities: list[Entity]) -> str:
@@ -64,7 +58,7 @@ def render_comparison(
     table.add_column("Naive (vector only)")
     table.add_column("Hybrid (vector + graph)")
 
-    naive_rows = [f"[{r.doc_type}] {r.id}: {r.text[:60]}" for r in naive]
+    naive_rows = [f"[{r.doc_type.short}] {r.id}: {r.text[:60]}" for r in naive]
     hybrid_rows = [f"[{short_kind(e.kind)}] {e.id}: {e.title}" for e in hybrid.entities]
 
     height = max(len(naive_rows), len(hybrid_rows))

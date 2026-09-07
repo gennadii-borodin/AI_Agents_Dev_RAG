@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from hybrid_rag.entities import Entity
 from hybrid_rag.graph import GraphTraversal
+from hybrid_rag.kind import Kind
 from hybrid_rag.vector import SearchResult, VectorStore
 
 
@@ -14,8 +15,7 @@ class HybridResult:
     entities: list[Entity]
 
 
-_BR_LABEL = "BusinessRequirement"
-_REQ_LABELS = {"FunctionalRequirement", "NonFunctionalRequirement"}
+_REQ_KINDS = frozenset({Kind.FUNCTIONAL_REQUIREMENT, Kind.NON_FUNCTIONAL_REQUIREMENT})
 
 
 def _expand_from_requirements(
@@ -23,8 +23,8 @@ def _expand_from_requirements(
 ) -> None:
     """Expand requirement seeds: tests covering them, plus BR children and tests."""
     seeds = graph.get_nodes(list(req_ids))
-    br_ids = {e.id for e in seeds if e.kind == _BR_LABEL}
-    fr_nfr_ids = {e.id for e in seeds if e.kind in _REQ_LABELS}
+    br_ids = {e.id for e in seeds if e.kind is Kind.BUSINESS_REQUIREMENT}
+    fr_nfr_ids = {e.id for e in seeds if e.kind in _REQ_KINDS}
 
     # Tests that cover the FR/NFR seeds (reverse COVERS)
     test_ids.update(e.id for e in graph.get_related_tests(list(fr_nfr_ids)))
@@ -66,7 +66,7 @@ def hybrid_search(
     test_ids: set[str] = set()
 
     for r in results:
-        if r.doc_type == "test":
+        if r.doc_type is Kind.TEST_SCENARIO:
             test_ids.add(r.id)
         else:
             req_ids.add(r.id)

@@ -2,22 +2,25 @@
 
 from hybrid_rag.demo import format_entities, short_kind
 from hybrid_rag.entities import Entity
+from hybrid_rag.kind import Kind
 
 
-def test_short_kind_maps_labels():
-    assert short_kind("BusinessRequirement") == "BR"
-    assert short_kind("FunctionalRequirement") == "FR"
-    assert short_kind("NonFunctionalRequirement") == "NFR"
-    assert short_kind("TestScenario") == "TS"
-    assert short_kind("Unknown") == "Unknown"
+def test_short_kind_maps_kinds():
+    assert short_kind(Kind.BUSINESS_REQUIREMENT) == "BR"
+    assert short_kind(Kind.FUNCTIONAL_REQUIREMENT) == "FR"
+    assert short_kind(Kind.NON_FUNCTIONAL_REQUIREMENT) == "NFR"
+    assert short_kind(Kind.TEST_SCENARIO) == "TS"
 
 
 def test_format_entities_renders_lines():
     entities = [
         Entity(
-            id="BR-001", title="Авторизация", text="вход", kind="BusinessRequirement"
+            id="BR-001",
+            title="Авторизация",
+            text="вход",
+            kind=Kind.BUSINESS_REQUIREMENT,
         ),
-        Entity(id="TS-031", title="Шифрование", text="TLS", kind="TestScenario"),
+        Entity(id="TS-031", title="Шифрование", text="TLS", kind=Kind.TEST_SCENARIO),
     ]
 
     rendered = format_entities(entities)

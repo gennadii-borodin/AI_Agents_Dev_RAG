@@ -6,20 +6,23 @@ from fakes import FakeGraph
 
 from hybrid_rag.entities import Entity
 from hybrid_rag.hybrid import hybrid_search, naive_search
+from hybrid_rag.kind import Kind
 from hybrid_rag.vector import SearchResult
 
 
-def make_entity(doc_id: str, kind: str) -> Entity:
+def make_entity(doc_id: str, kind: Kind) -> Entity:
     return Entity(id=doc_id, title="t", text="x", kind=kind)
 
 
-def make_search_result(doc_id: str, doc_type: str) -> SearchResult:
-    return SearchResult(id=doc_id, text="text", doc_type=doc_type, score=0.8)
+def make_search_result(doc_id: str, kind: Kind) -> SearchResult:
+    return SearchResult(id=doc_id, text="text", doc_type=kind, score=0.8)
 
 
 def test_naive_search_returns_vector_results_only():
     store = MagicMock()
-    store.search.return_value = [make_search_result("BR-006", "business")]
+    store.search.return_value = [
+        make_search_result("BR-006", Kind.BUSINESS_REQUIREMENT)
+    ]
 
     results = naive_search(store, "security")
 
@@ -30,17 +33,17 @@ def test_naive_search_returns_vector_results_only():
 def test_hybrid_search_expands_requirement_seeds():
     store = MagicMock()
     store.search.return_value = [
-        make_search_result("NFR-004", "nonfunctional"),
-        make_search_result("BR-006", "business"),
+        make_search_result("NFR-004", Kind.NON_FUNCTIONAL_REQUIREMENT),
+        make_search_result("BR-006", Kind.BUSINESS_REQUIREMENT),
     ]
 
     graph = FakeGraph(
         nodes={
-            "NFR-004": make_entity("NFR-004", "NonFunctionalRequirement"),
-            "BR-006": make_entity("BR-006", "BusinessRequirement"),
-            "FR-013": make_entity("FR-013", "FunctionalRequirement"),
-            "TS-031": make_entity("TS-031", "TestScenario"),
-            "TS-032": make_entity("TS-032", "TestScenario"),
+            "NFR-004": make_entity("NFR-004", Kind.NON_FUNCTIONAL_REQUIREMENT),
+            "BR-006": make_entity("BR-006", Kind.BUSINESS_REQUIREMENT),
+            "FR-013": make_entity("FR-013", Kind.FUNCTIONAL_REQUIREMENT),
+            "TS-031": make_entity("TS-031", Kind.TEST_SCENARIO),
+            "TS-032": make_entity("TS-032", Kind.TEST_SCENARIO),
         },
         tests_by_requirement={
             "NFR-004": ["TS-031", "TS-032"],
@@ -58,13 +61,15 @@ def test_hybrid_search_expands_requirement_seeds():
 
 def test_hybrid_search_expands_business_requirement_seed():
     store = MagicMock()
-    store.search.return_value = [make_search_result("BR-003", "business")]
+    store.search.return_value = [
+        make_search_result("BR-003", Kind.BUSINESS_REQUIREMENT)
+    ]
 
     graph = FakeGraph(
         nodes={
-            "BR-003": make_entity("BR-003", "BusinessRequirement"),
-            "FR-005": make_entity("FR-005", "FunctionalRequirement"),
-            "TS-011": make_entity("TS-011", "TestScenario"),
+            "BR-003": make_entity("BR-003", Kind.BUSINESS_REQUIREMENT),
+            "FR-005": make_entity("FR-005", Kind.FUNCTIONAL_REQUIREMENT),
+            "TS-011": make_entity("TS-011", Kind.TEST_SCENARIO),
         },
         tests_by_requirement={"FR-005": ["TS-011"]},
         children_by_br={"BR-003": ["FR-005"]},
@@ -78,13 +83,13 @@ def test_hybrid_search_expands_business_requirement_seed():
 
 def test_hybrid_search_expands_test_seed_to_parents():
     store = MagicMock()
-    store.search.return_value = [make_search_result("TS-037", "test")]
+    store.search.return_value = [make_search_result("TS-037", Kind.TEST_SCENARIO)]
 
     graph = FakeGraph(
         nodes={
-            "TS-037": make_entity("TS-037", "TestScenario"),
-            "NFR-008": make_entity("NFR-008", "NonFunctionalRequirement"),
-            "BR-006": make_entity("BR-006", "BusinessRequirement"),
+            "TS-037": make_entity("TS-037", Kind.TEST_SCENARIO),
+            "NFR-008": make_entity("NFR-008", Kind.NON_FUNCTIONAL_REQUIREMENT),
+            "BR-006": make_entity("BR-006", Kind.BUSINESS_REQUIREMENT),
         },
         tests_by_requirement={"NFR-008": ["TS-037"]},
         parent_by_requirement={"NFR-008": "BR-006"},
@@ -98,12 +103,14 @@ def test_hybrid_search_expands_test_seed_to_parents():
 
 def test_hybrid_search_returns_entities_with_kinds():
     store = MagicMock()
-    store.search.return_value = [make_search_result("BR-001", "business")]
+    store.search.return_value = [
+        make_search_result("BR-001", Kind.BUSINESS_REQUIREMENT)
+    ]
 
     graph = FakeGraph(
         nodes={
-            "BR-001": make_entity("BR-001", "BusinessRequirement"),
-            "FR-001": make_entity("FR-001", "FunctionalRequirement"),
+            "BR-001": make_entity("BR-001", Kind.BUSINESS_REQUIREMENT),
+            "FR-001": make_entity("FR-001", Kind.FUNCTIONAL_REQUIREMENT),
         },
         children_by_br={"BR-001": ["FR-001"]},
     )
@@ -111,5 +118,5 @@ def test_hybrid_search_returns_entities_with_kinds():
     result = hybrid_search(store, graph, "вход")
 
     kinds = {e.kind for e in result.entities}
-    assert "BusinessRequirement" in kinds
-    assert "FunctionalRequirement" in kinds
+    assert Kind.BUSINESS_REQUIREMENT in kinds
+    assert Kind.FUNCTIONAL_REQUIREMENT in kinds
