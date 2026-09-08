@@ -49,7 +49,7 @@ docker compose -f hybrid_rag/docker-compose.yml up -d
 pytest
 
 # 5. Запуск демо
-python -m hybrid_rag.demo
+uv run -m hybrid_rag.demo
 ```
 
 **Fallback без `uv`:**
