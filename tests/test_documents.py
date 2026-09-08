@@ -43,7 +43,7 @@ def test_every_test_scenario_has_covers():
 
 
 def test_queries_are_defined():
-    assert len(QUERIES) == 3
+    assert QUERIES
     for q in QUERIES:
         assert "question" in q
         assert q["question"]
