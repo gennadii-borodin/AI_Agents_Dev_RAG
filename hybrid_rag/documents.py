@@ -43,8 +43,8 @@ DOCUMENTS: list[Document] = [
         "type": "business",
         "title": "Перевод средств между счетами",
         "text": (
-            "allow users to transfer money between their own accounts "
-            "and to third-party recipients"
+            "предоставить пользователям возможность переводить средства "
+            "между своими счетами и сторонним получателям"
         ),
     },
     {
@@ -52,8 +52,8 @@ DOCUMENTS: list[Document] = [
         "type": "business",
         "title": "Управление картами",
         "text": (
-            "allow users to view, block, and unblock their bank cards "
-            "directly from the app"
+            "позволить пользователям просматривать, блокировать и разблокировать "
+            "свои банковские карты прямо из приложения"
         ),
     },
     {
@@ -61,8 +61,8 @@ DOCUMENTS: list[Document] = [
         "type": "business",
         "title": "Push-уведомления",
         "text": (
-            "inform users about important events (transactions, security alerts) "
-            "in real time"
+            "информировать пользователей о важных событиях (транзакции, "
+            "оповещения безопасности) в реальном времени"
         ),
     },
     {
@@ -70,8 +70,8 @@ DOCUMENTS: list[Document] = [
         "type": "business",
         "title": "Безопасность данных",
         "text": (
-            "ensure all user data is encrypted and stored "
-            "in compliance with PCI DSS standards"
+            "обеспечить шифрование и хранение всех пользовательских данных "
+            "в соответствии со стандартами PCI DSS"
         ),
     },
     # --- Functional Requirements ---
@@ -80,9 +80,9 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "Вход по PIN-коду",
         "text": (
-            "система должна allow users to set a 4-digit PIN during registration "
-            "and use it for subsequent logins. PIN attempts limited to 5 "
-            "before account lockout"
+            "система должна позволять пользователям установить 4-значный PIN "
+            "при регистрации и использовать его для последующих входов. "
+            "Количество неудачных попыток ограничено 5, после чего аккаунт блокируется"
         ),
         "implements": "BR-001",
     },
@@ -91,8 +91,8 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "Биометрическая аутентификация",
         "text": (
-            "система должна поддерживать вход через отпечаток пальца (fingerprint) "
-            "и распознавание лица (Face ID) на supported устройствах"
+            "система должна поддерживать вход через отпечаток пальца "
+            "и распознавание лица (Face ID) на поддерживаемых устройствах"
         ),
         "implements": "BR-001",
     },
@@ -111,7 +111,7 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "История транзакций",
         "text": (
-            "система должна allow users to view transaction history "
+            "система должна позволять пользователям просматривать историю транзакций "
             "за последние 90 дней с фильтрацией по дате, сумме и типу операции"
         ),
         "implements": "BR-002",
@@ -121,8 +121,8 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "Перевод на свою карту",
         "text": (
-            "система должна allow users to transfer funds between their own accounts "
-            "instantly without fees"
+            "система должна позволять пользователям переводить средства "
+            "между своими счетами мгновенно и без комиссии"
         ),
         "implements": "BR-003",
     },
@@ -131,8 +131,8 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "Перевод по номеру телефона",
         "text": (
-            "система должна allow users to send money to another person "
-            "by entering their phone number, with confirmation via SMS code"
+            "система должна позволять пользователям отправлять деньги другому человеку "
+            "по номеру телефона с подтверждением через SMS-код"
         ),
         "implements": "BR-003",
     },
@@ -141,8 +141,8 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "Перевод по реквизитам",
         "text": (
-            "система должна allow users to transfer money to a bank account "
-            "using BIC and account number (IBAN)"
+            "система должна позволять пользователям переводить деньги "
+            "на банковский счёт с использованием BIC и номера счёта (IBAN)"
         ),
         "implements": "BR-003",
     },
@@ -161,8 +161,8 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "Блокировка карты",
         "text": (
-            "система должна allow users to temporarily block their card with one tap, "
-            "blocking all incoming transactions"
+            "система должна позволять пользователям временно блокировать карту "
+            "одним касанием, блокируя все входящие транзакции"
         ),
         "implements": "BR-004",
     },
@@ -171,8 +171,8 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "Разблокировка карты",
         "text": (
-            "система должна allow users to unblock their card after temporary block "
-            "via PIN or biometric confirmation"
+            "система должна позволять пользователям разблокировать карту "
+            "после временной блокировки через подтверждение PIN или биометрию"
         ),
         "implements": "BR-004",
     },
@@ -181,8 +181,8 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "Настройка уведомлений",
         "text": (
-            "система должна allow users to configure which notifications they receive "
-            "(transactions, security, promotions) via settings menu"
+            "система должна позволять пользователям настраивать, какие уведомления "
+            "получать (транзакции, безопасность, акции), через меню настроек"
         ),
         "implements": "BR-005",
     },
@@ -191,8 +191,8 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "Уведомление о транзакции",
         "text": (
-            "система должна отправлять push-уведомление immediately after each "
-            "successful transaction with amount and merchant details"
+            "система должна отправлять push-уведомление сразу после каждой "
+            "успешной транзакции с суммой и данными продавца"
         ),
         "implements": "BR-005",
     },
@@ -211,7 +211,7 @@ DOCUMENTS: list[Document] = [
         "type": "functional",
         "title": "Экспорт выписки",
         "text": (
-            "система должна allow users to export transaction history "
+            "система должна позволять пользователям экспортировать историю транзакций "
             "в формате PDF или CSV за выбранный период"
         ),
         "implements": "BR-002",
@@ -684,7 +684,9 @@ DOCUMENTS: list[Document] = [
 ]
 
 QUERIES: list[Query] = [
-    {"question": "Какие тесты покрывают безопасность?"},
-    {"question": "Что нужно сделать для перевода средств?"},
-    {"question": "Какие ограничения на приложение?"},
+    {"question": "какие виды информирования пользователя есть в приложении"},
+    {"question": "предложи варианты получения состояния счёта клиента"},
+    #{"question": "Какие тесты покрывают безопасность?"},
+    #{"question": "Что нужно сделать для перевода средств?"},
+    #{"question": "Какие ограничения на приложение?"},
 ]

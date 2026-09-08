@@ -18,10 +18,13 @@ from data import set_memory_context_prompt, set_user_prompt
 
 load_dotenv()
 console = Console()
-EMBEDDING_MODEL = "text-embedding-3-small"
-CHAT_MODEL = "gpt-4.1-mini"
+EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL") or "text-embedding-3-small"
+CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL") or "gpt-4.1-mini"
 
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    base_url=os.getenv("OPENAI_BASE_URL") or None,
+)
 db = chromadb.PersistentClient(path="./chroma_db")
 collection = db.get_or_create_collection(name="agent_memory")
 

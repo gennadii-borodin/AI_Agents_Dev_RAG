@@ -14,7 +14,11 @@ from openai import OpenAI
 from common import memory, separator
 from data import DEMO2_SYSTEM_PROMPT as SYSTEM_PROMPT
 
-client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+client = OpenAI(
+    api_key=os.environ["OPENAI_API_KEY"],
+    base_url=os.getenv("OPENAI_BASE_URL") or None,
+)
+CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL") or "gpt-4.1-mini"
 
 
 def tool_store(text: str, category: str = "general"):
@@ -125,7 +129,7 @@ def run_agent(user_message: str, max_steps: int = 6):
 
     for _ in range(max_steps):
         response = client.chat.completions.create(
-            model="gpt-4.1-mini",
+            model=CHAT_MODEL,
             messages=messages,
             tools=TOOL_SCHEMA,
             tool_choice="auto",

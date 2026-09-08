@@ -21,7 +21,7 @@ from hybrid_rag.vector import VectorStore
 load_dotenv()
 
 console = Console()
-CHAT_MODEL = "gpt-4.1-mini"
+CHAT_MODEL = os.getenv("OPENAI_CHAT_MODEL") or "gpt-4.1-mini"
 
 
 def short_kind(kind: Kind) -> str:
@@ -79,7 +79,10 @@ def main() -> None:
         )
     )
 
-    client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+    client = OpenAI(
+        api_key=os.environ["OPENAI_API_KEY"],
+        base_url=os.getenv("OPENAI_BASE_URL") or None,
+    )
 
     with graph.connect() as conn:
         conn.session.execute_write(graph.erase_graph)

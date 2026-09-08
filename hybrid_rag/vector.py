@@ -9,12 +9,15 @@ from typing import cast
 import chromadb
 import numpy as np
 from chromadb.api.types import Metadata
+from dotenv import load_dotenv
 from openai import OpenAI
 
 from hybrid_rag.documents import Document
 from hybrid_rag.kind import Kind
 
-EMBEDDING_MODEL = "text-embedding-3-small"
+load_dotenv()
+
+EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING_MODEL") or "text-embedding-3-small"
 CHROMA_PATH = "./hybrid_rag/chroma_db"
 COLLECTION_NAME = "requirements"
 
@@ -46,7 +49,10 @@ class VectorStore:
     def __post_init__(self) -> None:
         db = chromadb.PersistentClient(path=CHROMA_PATH)
         self._collection = db.get_or_create_collection(name=COLLECTION_NAME)
-        self._openai = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        self._openai = OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            base_url=os.getenv("OPENAI_BASE_URL") or None,
+        )
 
     def _embed(self, text: str) -> np.ndarray:
         response = self._openai.embeddings.create(model=EMBEDDING_MODEL, input=text)
